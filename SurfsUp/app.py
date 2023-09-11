@@ -97,18 +97,26 @@ def temperature():
 @app.route("/api/v1.0/<start>")
 @app.route("/api/v1.0/<start>/<end>")
 def averages(start=None, end=None):
-    
+
+    year_ago = dt.date(2017, 8, 23) - dt.timedelta(days=365)
+    year_ago
     avg = [Measurement.station,
            func.min(Measurement.tobs),
            func.max(Measurement.tobs),
            func.avg(Measurement.tobs)]
+    if not end:
+        active_averages = session.query(*avg).\
+            filter(Measurement.date >= year_ago).\
+            filter(Measurement.date <= year_ago).all()
+        data = list(np.ravel(active_averages))
+        return jsonify(data=data)
+
     active_averages = session.query(*avg).\
-    filter(Measurement.date >= start).all()
-    filter(Measurement.date >= end).all()
-    active_averages
-    
-    averages = list(np.ravel(active_averages))
-    return jsonify(averages)
+        filter(Measurement.date >= year_ago).\
+            filter(Measurement.date <= year_ago).all()
+    data = list(np.ravel(active_averages))
+    return jsonify(data=data)
+
 
 
 if __name__ == "__main__":
